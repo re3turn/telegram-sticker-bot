@@ -82,7 +82,6 @@ class Sticker:
         for sub in sub_list:
             subprocess.Popen.wait(sub)
 
-    @property
     def download_line_sticker(self):
         download_dir = self._sticker_dir
         zip_path = f'{download_dir}/{self._sticker_id}.zip'
