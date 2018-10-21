@@ -112,14 +112,13 @@ class Sticker:
         return UnicodeString.normalize(sticker_title, 64)
 
     async def generate_sticker_name(self, file_name=None):
-        prefix = os.environ.get('STIKER_PREFIX')
-        if prefix is None:
-            prefix = file_name
-            if file_name is None:
-                regex = re.compile("([a-zA-Z\d]+)")
-                match = regex.match(self.fetch_line_sticker_title())
-                prefix = match.group(1)
-                prefix = f'{prefix}_{self._sticker_id}'
+        prefix = file_name
+        if file_name is None:
+            match = re.match("([a-zA-Z\d]+)", self.fetch_line_sticker_title())
+            if match is None:
+                prefix = str(self._sticker_id)
+            else:
+                prefix = f'{match.group(1)}_{self._sticker_id}'
 
         bot_info = await self._bot.getMe()
         bot_username = bot_info['username']
