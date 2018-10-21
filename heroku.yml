@@ -1,7 +1,9 @@
 build:
   languages:
-  - python
+    - python
   packages:
-  - pngquant
+    - pngquant
 run:
-  worker: python run.py
+  worker:
+    command:
+      - python run.py
