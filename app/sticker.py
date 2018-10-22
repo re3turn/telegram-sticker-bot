@@ -16,7 +16,6 @@ from .unicode_string import UnicodeString
 from .store import StickerStore
 
 MAX_STICKER_SIZE = 512
-line_zip_url = 'http://dl.stickershop.line.naver.jp/products/0/0/1/[replace]/iphone/stickers@2x.zip'
 
 
 class Sticker:
@@ -86,7 +85,7 @@ class Sticker:
         download_dir = self._sticker_dir
         zip_path = f'{download_dir}/{self._sticker_id}.zip'
 
-        zip_url = line_zip_url.replace('[replace]', str(self._sticker_id))
+        zip_url = f'http://dl.stickershop.line.naver.jp/products/0/0/1/{self._sticker_id}/iphone/stickers@2x.zip'
         try:
             urllib.request.urlretrieve(zip_url, zip_path)
         except:
@@ -105,7 +104,7 @@ class Sticker:
 
     def fetch_line_sticker_title(self, region='en'):
         url = f'https://store.line.me/stickershop/product/{self._sticker_id}/{region}'
-        query = pyquery.PyQuery(url=url.replace('[id]', str(self._sticker_id)))
+        query = pyquery.PyQuery(url=url)
         sticker_title = query('h3').filter('.mdCMN08Ttl').text()
 
         # sticker_title is maximum 64 characters
