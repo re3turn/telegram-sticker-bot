@@ -2,11 +2,21 @@
 
 import psycopg2
 import os
+import pytz
 from datetime import datetime
+
 
 class StickerStore:
     def __init__(self):
         self._db_url = os.environ.get('DATABASE_URL')
+        timezone = os.environ.get('TIMEZONE')
+        if timezone is None:
+            self._tz = pytz.timezone(pytz.utc.zone)
+        else:
+            try:
+                self._tz = pytz.timezone(timezone)
+            except pytz.UnknownTimeZoneError:
+                self._tz = pytz.timezone(pytz.utc.zone)
 
     def _get_connection(self):
         try:
@@ -32,7 +42,7 @@ class StickerStore:
         return sticker_info
 
     def insert_sticker_info(self, username, user_id, sticker_title, sticker_name, sticker_id=-1):
-        date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+        date = datetime.now(self._tz).strftime("%Y/%m/%d %H:%M:%S")
         with self._get_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
