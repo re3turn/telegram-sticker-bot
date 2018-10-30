@@ -46,17 +46,11 @@ class Sticker:
         round = (lambda x: (x * 2 + 1) // 2)
         # Must not exceed 512px, and either width or height must be exactly 512px
         if width + height <= MAX_STICKER_SIZE * 2:
-            if width < height:
-                scale = MAX_STICKER_SIZE / float(height)
-            else:
-                scale = MAX_STICKER_SIZE / float(width)
+            scale = MAX_STICKER_SIZE / float(max(width, height))
             new_width = int(round(scale * width))
             new_height = int(round(scale * height))
         else:
-            if width > height:
-                scale = width / float(MAX_STICKER_SIZE)
-            else:
-                scale = height / float(MAX_STICKER_SIZE)
+            scale = max(width, height) / float(MAX_STICKER_SIZE)
             new_width = int(round(width / scale))
             new_height = int(round(height / scale))
         return new_width, new_height
