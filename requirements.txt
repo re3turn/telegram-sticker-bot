@@ -1,3 +1,4 @@
+nose2==0.8.0
 Pillow==5.3.0
 psycopg2-binary==2.7.5
 pyquery==1.4.0
