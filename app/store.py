@@ -9,7 +9,7 @@ from datetime import datetime
 class StickerStore:
     def __init__(self):
         self._db_url = os.environ.get('DATABASE_URL')
-        timezone = os.environ.get('TIMEZONE')
+        timezone = os.environ.get('TZ')
         if timezone is None:
             self._tz = pytz.timezone(pytz.utc.zone)
         else:
