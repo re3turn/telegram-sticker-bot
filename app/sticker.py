@@ -171,6 +171,7 @@ class Sticker:
         if emojis is None:
             emojis = '🔗'
 
+        is_created = False
         file_ids = []
         try:
             for png_path in glob.glob(f'{self._sticker_dir}/*.png'):
@@ -199,7 +200,8 @@ class Sticker:
         except telepot.exception.TelegramError as e:
             print("Faled create sticker.", e.args)
             traceback.print_exc()
-            await self.delete_sticker_set(sticker_name)
+            if is_created is True:
+                await self.delete_sticker_set(sticker_name)
             return False
 
         return True
