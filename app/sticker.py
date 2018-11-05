@@ -102,7 +102,7 @@ class Sticker:
         try:
             query = pyquery.PyQuery(url=url)
             sticker_title = query('h3').filter('.mdCMN08Ttl').text()
-        except urllib.error:
+        except urllib.error.HTTPError:
             return ""
         # sticker_title is maximum 64 characters
         return UnicodeString.normalize(sticker_title, 64)

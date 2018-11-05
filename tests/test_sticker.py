@@ -60,7 +60,8 @@ class TestSticker:
     @nose2.tools.params(
         (1215735, 'en', 'Winter emblem'),
         (1215735, 'ja', '冬のワッペン'),
-        (8988, 'ko', '아리스토캣: 크레용 버전')
+        (8988, 'ko', '아리스토캣: 크레용 버전'),
+        (9999999999999, 'en', '')
     )
     def test_fetch_line_sticker_title(self, stikcer_id, region, ans):
         sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_CHAT_ID, stikcer_id)
