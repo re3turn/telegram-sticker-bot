@@ -112,7 +112,7 @@ class Sticker:
         if file_name is None:
             match = re.match("([a-zA-Z\d]+)", self.fetch_line_sticker_title())
             if match is None:
-                prefix = str(self._sticker_id)
+                prefix = f'line_{self._sticker_id}'
             else:
                 prefix = f'{match.group(1)}_{self._sticker_id}'
 

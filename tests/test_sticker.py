@@ -69,7 +69,8 @@ class TestSticker:
 
     @nose2.tools.params(
         (-1, "abcdef", 'abcdef_by_testbot'),
-        (1215735, None, 'Winter_1215735_by_testbot')
+        (1215735, None, 'Winter_1215735_by_testbot'),
+        (9999999999999, None, 'line_9999999999999_by_testbot')
     )
     def test_generate_sticker_name(self, sticker_id, file_name, ans):
         self._mock_bot.getMe = asynctest.Mock(side_effect=MockTelepot.mock_get_me)
