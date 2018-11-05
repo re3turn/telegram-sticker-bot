@@ -3,6 +3,7 @@
 import glob
 import os
 import urllib.request
+import urllib.error
 import re
 import pyquery
 import zipfile
@@ -98,9 +99,11 @@ class Sticker:
 
     def fetch_line_sticker_title(self, region='en'):
         url = f'https://store.line.me/stickershop/product/{self._sticker_id}/{region}'
-        query = pyquery.PyQuery(url=url)
-        sticker_title = query('h3').filter('.mdCMN08Ttl').text()
-
+        try:
+            query = pyquery.PyQuery(url=url)
+            sticker_title = query('h3').filter('.mdCMN08Ttl').text()
+        except urllib.error:
+            return ""
         # sticker_title is maximum 64 characters
         return UnicodeString.normalize(sticker_title, 64)
 
