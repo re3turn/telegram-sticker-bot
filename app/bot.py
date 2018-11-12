@@ -12,14 +12,32 @@ log_name = 'bot.log'
 bot = None
 
 
+def get_username(msg):
+    user_id = str(msg['from']['id'])
+    username = None
+    last_name = None
+    if 'first_name' in msg['from']:
+        username = str(msg['from']['first_name'])
+    if 'last_name' in msg['from']:
+        last_name = msg['from']['last_name']
+
+    if username is None:
+        if last_name is None:
+            username = user_id
+        else:
+            username = last_name
+    elif last_name is not None:
+        username = f'{username}_{last_name}'
+
+    return username
+
+
 # Define the parameters of the telegram
 async def handle(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
     # chat_id = str(msg['chat']['id'])
     user_id = str(msg['from']['id'])
-    username = str(msg['from']['first_name'])
-    if msg['from']['last_name'] is not None:
-        username += msg['from']['last_name']
+    username = get_username(msg)
 
     # Receive text message response
     if content_type == 'text':
