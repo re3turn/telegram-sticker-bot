@@ -177,7 +177,7 @@ class Sticker:
         is_created = False
         file_ids = []
         try:
-            for png_path in glob.glob(f'{self._sticker_dir}/*.png'):
+            for png_path in sorted(glob.glob(f'{self._sticker_dir}/*.png')):
                 with open(png_path, 'rb') as png:
                     uploaded_file = await self._bot.uploadStickerFile(self._user_id, png)
 
