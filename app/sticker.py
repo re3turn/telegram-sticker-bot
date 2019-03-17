@@ -101,7 +101,7 @@ class Sticker:
         url = f'https://store.line.me/stickershop/product/{self._sticker_id}/{region}'
         try:
             query = pyquery.PyQuery(url=url)
-            sticker_title = query('h3').filter('.mdCMN08Ttl').text()
+            sticker_title = query('p').filter('.mdCMN38Item01Ttl').text()
         except urllib.error.HTTPError:
             return ""
         # sticker_title is maximum 64 characters
