@@ -102,6 +102,9 @@ class Sticker:
         try:
             query = pyquery.PyQuery(url=url)
             sticker_title = query('p').filter('.mdCMN38Item01Ttl').text()
+            if len(sticker_title) == 0:
+                # selling discontinued sticker
+                sticker_title = query('h2').eq(1).text()
         except urllib.error.HTTPError:
             return ""
         # sticker_title is maximum 64 characters

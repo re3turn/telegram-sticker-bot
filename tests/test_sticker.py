@@ -61,6 +61,7 @@ class TestSticker:
         (1215735, 'en', 'Winter emblem'),
         (1215735, 'ja', '冬のワッペン'),
         (8988, 'ko', '아리스토캣: 크레용 버전'),
+        (1130155, 'ja', 'ヨグまつ'),  # selling discontinued sticker
         (9999999999999, 'en', '')
     )
     def test_fetch_line_sticker_title(self, stikcer_id, region, ans):
