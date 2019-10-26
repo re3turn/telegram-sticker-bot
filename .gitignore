@@ -1,6 +1,8 @@
 .idea/**/workspace.xml
 .idea/**/tasks.xml
+.idea/dataSources/
 __pycache__/
+.mypy_cache/
 stickers/
 *.session
 bot.log
