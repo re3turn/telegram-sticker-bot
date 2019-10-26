@@ -113,7 +113,7 @@ class Sticker:
     async def generate_sticker_name(self, file_name=None):
         prefix = file_name
         if file_name is None:
-            match = re.match("([a-zA-Z\d]+)", self.fetch_line_sticker_title())
+            match = re.search(r"([a-zA-Z\d]+)", self.fetch_line_sticker_title())
             if match is None:
                 prefix = f'line_{self._sticker_id}'
             else:
