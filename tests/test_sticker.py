@@ -73,6 +73,7 @@ class TestSticker:
         (-1, "abcdef", 'abcdef_by_testbot'),
         (9365573, None, 'Hitori_9365573_by_testbot'),
         (1215735, None, 'Winter_1215735_by_testbot'),
+        (14056952, None, 'DK_14056952_by_testbot'),
         (9999999999999, None, 'line_9999999999999_by_testbot')
     )
     def test_generate_sticker_name(self, sticker_id, file_name, ans):
