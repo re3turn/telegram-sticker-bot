@@ -12,7 +12,7 @@ psycopg2-binary = "==2.8.3"
 pyquery = "==1.4.0"
 pytz = "==2019.2"
 telepot = "==12.7"
-Pillow = "==8.1.1"
+Pillow = "==8.2.0"
 
 [requires]
 python_version = "3.8"
