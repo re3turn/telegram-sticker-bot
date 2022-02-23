@@ -1,31 +1,23 @@
 #!/usr/bin/python3
 
+import logging
 import psycopg2
-import os
-import pytz
 from datetime import datetime
 from app.env import Env
+from app.tz import Tz
 
 
 class StickerStore:
     def __init__(self):
         self._db_url: str = Env.get_environment('DATABASE_URL', required=True)
         self._ssl_mode: str = Env.get_environment('DATABASE_SSLMODE', default='require', required=False)
-        timezone = os.environ.get('TZ')
-        if timezone is None:
-            self._tz = pytz.timezone(pytz.utc.zone)
-        else:
-            try:
-                self._tz = pytz.timezone(timezone)
-            except pytz.UnknownTimeZoneError:
-                self._tz = pytz.timezone(pytz.utc.zone)
+        self._tz = Tz.timezone()
 
     def _get_connection(self):
         try:
             connection = psycopg2.connect(self._db_url, sslmode=self._ssl_mode)
-        except:
-            import traceback
-            traceback.print_exc()
+        except Exception as e:
+            logger.exception(f'Connection error. exception={e.args}')
             return None
 
         connection.autocommit = True
@@ -51,6 +43,9 @@ class StickerStore:
                     'INSERT INTO sticker_info (username, user_id, sticker_title, sticker_name, line_sticker_id, date) '
                     'VALUES (%s, %s, %s, %s, %s, %s)',
                     (username, user_id, sticker_title, sticker_name, sticker_id, date))
+
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 if __name__ == '__main__':

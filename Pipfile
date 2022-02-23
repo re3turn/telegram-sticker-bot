@@ -7,12 +7,14 @@ verify_ssl = true
 
 [packages]
 asynctest = "==0.13.0"
-nose2 = "==0.10.0"
-psycopg2-binary = "==2.9.2"
+nose2 = "==0.11.0"
+psycopg2-binary = "==2.9.3"
 pyquery = "==1.4.3"
 pytz = "==2021.3"
 telepot = "==12.7"
-Pillow = "==9.0.0"
+Pillow = "==9.0.1"
+termcolor = "*"
+pendulum = "*"
 
 [requires]
 python_version = "3.8"

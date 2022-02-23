@@ -14,11 +14,13 @@ from app.store import StickerStore
 TEST_CHAT_ID = 999999
 TEST_USER_ID = 999999
 TEST_USER_NAME = "test"
+TEST_DATABASE_URL = 'postgres://username:password@hostname:port/database'
 
 
 class TestSticker:
     def __init__(self):
         self._mock_bot = None
+        os.environ['DATABASE_URL'] = TEST_DATABASE_URL
 
     def setUp(self):
         self._mock_bot = asynctest.patch('telepot.aio.Bot', autospec=True)

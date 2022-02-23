@@ -1,11 +1,13 @@
 #!/usr/bin/python3
 
+import logging
 import asyncio
 import os
-import time
 import sys
 import telepot.aio
 from telepot.aio.loop import MessageLoop
+
+from app.env import Env
 from .sticker import Sticker
 
 log_name = 'bot.log'
@@ -38,18 +40,20 @@ async def handle(msg):
     # chat_id = str(msg['chat']['id'])
     user_id = str(msg['from']['id'])
     username = get_username(msg)
+    content = ''
 
     # Receive text message response
     if content_type == 'text':
         command = msg['text'].lower()
-        content = f'{username}({username}):{command}'
+        content = f'{username}({user_id}):{command}'
 
         if 'line.me' in command:
+            bot.sendMessage(chat_id, 'Convert telegram sticker. Please wait for a few minutes...')
             sticker = Sticker(bot, username, user_id, chat_id)
             await sticker.register_line_sticker(command)
         elif command == '/start':
             # bot.sendMessage(chat_id, 'Please take it https://store.line.me/ja')
-            print('/start')
+            pass
 
     # Receive the file
     elif content_type == 'document':
@@ -63,29 +67,26 @@ async def handle(msg):
         content = f'{username}({user_id}):Send documents.\n{file_name}\n{file_id}'
         if '.zip' in file_name:
             sticker = Sticker(bot, username, user_id, chat_id)
+            bot.sendMessage(chat_id, 'Convert telegram sticker. Please wait for a few minutes...')
             await sticker.register_zip_sticker(file_id, file_name, caption)
 
-    # log
-    timestamp = str(time.strftime("%Y-%m-%d %H:%M:%S"))
-    log = f'[{timestamp}] {content}\n'
-    with open(log_name, 'a') as logfile:
-        logfile.write(log)
+    logger.info(content)
 
 
 def main():
-    api_token = os.environ.get('TELEPOT_API_TOKEN')
-    if api_token is None:
-        sys.exit('Please set environment "TELEPOT_API_TOKEN"')
+    api_token = Env.get_environment('TELEPOT_API_TOKEN', required=True)
 
     global bot
     bot = telepot.aio.Bot(api_token)
     loop = asyncio.get_event_loop()
 
     loop.create_task(MessageLoop(bot, handle).run_forever())
-    print('Listening...')
+    logger.info('Listening...')
 
     loop.run_forever()
 
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     main()

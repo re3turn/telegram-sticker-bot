@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import logging
 import glob
 import os
 import urllib.request
@@ -13,6 +14,8 @@ import traceback
 import telepot.aio
 from telepot.namedtuple import StickerSet
 from PIL import Image
+
+from .env import Env
 from .unicode_string import UnicodeString
 from .store import StickerStore
 
@@ -168,14 +171,12 @@ class Sticker:
             for sticker in sticker_sets.stickers:
                 await self._bot.deleteStickerFromSet(sticker.file_id)
         except telepot.exception.TelegramError as e:
-            print("Faled delete stickers.", e.args)
+            logger.error("Failed delete stickers.", e.args)
             traceback.print_exc()
 
     async def create_sticker_set(self, sticker_title, sticker_name):
-        print(f'Create sticker. title={sticker_title}, sticker_name={sticker_name}')
-        emojis = os.environ.get('EMOJI')
-        if emojis is None:
-            emojis = '🔗'
+        logger.info(f'Create sticker. title={sticker_title}, sticker_name={sticker_name}')
+        emojis = Env.get_environment('EMOJI', default='🔗', required=False)
 
         is_created = False
         file_ids = []
@@ -187,7 +188,7 @@ class Sticker:
                 file_ids.append(uploaded_file['file_id'])
 
             if not file_ids:
-                print(f'Not sticker file in {self._sticker_dir}.')
+                logger.warning(f'Not sticker file in {self._sticker_dir}.')
                 return False
 
             is_created = await self._bot.createNewStickerSet(self._user_id, sticker_name, sticker_title,
@@ -204,7 +205,7 @@ class Sticker:
                     await self.delete_sticker_set(sticker_name)
                     return False
         except telepot.exception.TelegramError as e:
-            print("Failed create sticker.", e.args)
+            logger.error("Failed create sticker.", e.args)
             traceback.print_exc()
             if is_created is True:
                 await self.delete_sticker_set(sticker_name)
@@ -221,7 +222,8 @@ class Sticker:
 
         try:
             sticker_id = re.search(r'\d+', str(command)).group()
-        except:
+        except Exception as e:
+            logger.error('Can not find "Sticker id".', e.args)
             await self._bot.sendMessage(self._chat_id, 'Can not find "Sticker id".')
             traceback.print_exc()
             return False
@@ -229,14 +231,14 @@ class Sticker:
         self.set_sticker_id(sticker_id)
         self.set_sticker_dir(sticker_id=int(sticker_id))
         if os.path.isdir(self._sticker_dir):
-            print(f'Already create sticker now. sticker_dir={self._sticker_dir}')
+            logger.info(f'Already create sticker now. sticker_dir={self._sticker_dir}')
             return False
 
         store = StickerStore()
         try:
             entry = store.fetch_line_sticker_info(sticker_id)
         except Exception as e:
-            print("db access false.", e.args)
+            logger.error("db access false.", e.args)
             traceback.print_exc()
             return False
 
@@ -254,9 +256,7 @@ class Sticker:
 
         self.resize_sticker()
 
-        region = os.environ.get('REGION')
-        if region is None:
-            region = 'en'
+        region = Env.get_environment('REGION', default='en', required=False)
         sticker_title = self.fetch_line_sticker_title(region)
         sticker_name = await self.generate_sticker_name()
 
@@ -272,7 +272,7 @@ class Sticker:
         try:
             store.insert_sticker_info(self._username, self._user_id, sticker_title, sticker_name, sticker_id)
         except Exception as e:
-            print("Insert false.", e.args)
+            logger.error("Insert false.", e.args)
             traceback.print_exc()
 
         return True
@@ -282,14 +282,14 @@ class Sticker:
         sticker_name = await self.generate_sticker_name(file_name=basename)
         if await self.is_already_sticker_name(sticker_name):
             msg = f'Already exist sticker_name!!\nPlease another file name.\nhttps://t.me/addstickers/{sticker_name}'
-            print(msg)
+            logger.warning(msg)
             await self._bot.sendMessage(self._chat_id, msg)
             return False
 
         sticker_title = UnicodeString.normalize(caption, 64)
         self.set_sticker_dir(zip_file_name=basename)
         if os.path.isdir(self._sticker_dir):
-            print(f'Already create sticker now. sticker_dir={self._sticker_dir}')
+            logger.warning(f'Already create sticker now. sticker_dir={self._sticker_dir}')
             return False
         os.makedirs(self._sticker_dir, exist_ok=True)
 
@@ -311,7 +311,10 @@ class Sticker:
         try:
             store.insert_sticker_info(self._username, self._user_id, sticker_title, sticker_name)
         except Exception as e:
-            print("Insert false.", e.args)
+            logger.error("Insert false.", e.args)
             traceback.print_exc()
 
         return True
+
+
+logger: logging.Logger = logging.getLogger(__name__)
