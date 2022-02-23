@@ -48,11 +48,11 @@ async def handle(msg):
         content = f'{username}({user_id}):{command}'
 
         if 'line.me' in command:
-            bot.sendMessage(chat_id, 'Convert telegram sticker. Please wait for a few minutes...')
+            await bot.sendMessage(chat_id, 'Convert telegram sticker. Please wait for a few minutes...')
             sticker = Sticker(bot, username, user_id, chat_id)
             await sticker.register_line_sticker(command)
         elif command == '/start':
-            # bot.sendMessage(chat_id, 'Please take it https://store.line.me/ja')
+            # await bot.sendMessage(chat_id, 'Please take it https://store.line.me/ja')
             pass
 
     # Receive the file
@@ -67,7 +67,7 @@ async def handle(msg):
         content = f'{username}({user_id}):Send documents.\n{file_name}\n{file_id}'
         if '.zip' in file_name:
             sticker = Sticker(bot, username, user_id, chat_id)
-            bot.sendMessage(chat_id, 'Convert telegram sticker. Please wait for a few minutes...')
+            await bot.sendMessage(chat_id, 'Convert telegram sticker. Please wait for a few minutes...')
             await sticker.register_zip_sticker(file_id, file_name, caption)
 
     logger.info(content)
