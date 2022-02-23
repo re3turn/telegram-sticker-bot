@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  bot:
+    build:
+      context: .
+    container_name: telegram_sticker_bot
+    image: telegram_sticker_bot
+    environment:
+      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/postgres"
+      DATABASE_SSLMODE: "disable"
+      TZ:
+      REGION:
+      TELEPOT_API_TOKEN:
+      EMOJI:
+    depends_on:
+      - postgres
+    logging:
+      options:
+        max-file: '3'
+        max-size: 10m
+    restart: always
+  postgres:
+    image: postgres:13
+    ports:
+      - "55432:5432"
+    volumes:
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
+      - sticker-bot-postgres:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    logging:
+      options:
+        max-file: '3'
+        max-size: 10m
+    restart: always
+
+volumes:
+  sticker-bot-postgres:
