@@ -204,7 +204,7 @@ class Sticker:
                     await self.delete_sticker_set(sticker_name)
                     return False
         except telepot.exception.TelegramError as e:
-            print("Faled create sticker.", e.args)
+            print("Failed create sticker.", e.args)
             traceback.print_exc()
             if is_created is True:
                 await self.delete_sticker_set(sticker_name)
@@ -302,7 +302,7 @@ class Sticker:
         sub = subprocess.Popen(f'rm -r {self._sticker_dir}', shell=True)
         subprocess.Popen.wait(sub)
         if is_created is False:
-            await self._bot.sendMessage(self._chat_id, 'Faled create sticker.')
+            await self._bot.sendMessage(self._chat_id, 'Failed create sticker.')
             return False
 
         await self._bot.sendMessage(self._chat_id, f'{sticker_title}\nhttps://t.me/addstickers/{sticker_name}')
