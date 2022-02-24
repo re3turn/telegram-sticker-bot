@@ -3,7 +3,7 @@ import os
 
 from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from typing import Any
+from typing import Any, List
 
 from app.env import Env
 from app.tz import Tz
@@ -23,7 +23,7 @@ class Log:
         cls.tz = Tz.timezone()
         logging.Formatter.converter = cls.time_converter
         stream_handler = logging.StreamHandler()
-        handlers = [stream_handler]
+        handlers: List[logging.Handler] = [stream_handler]
 
         output_log_file_enabled: bool = Env.get_bool_environment('OUTPUT_LOG_FILE_ENABLED', default=True)
         if output_log_file_enabled:
