@@ -15,6 +15,8 @@ RUN apt update  \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /usr/local/lib/python${PYTHON_VERSION}/site-packages /usr/local/lib/python${PYTHON_VERSION}/site-packages
 
+WORKDIR /service
+
 COPY app /service/app
 COPY run.py /service
 
