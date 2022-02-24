@@ -6,7 +6,7 @@ services:
     container_name: telegram_sticker_bot
     image: telegram_sticker_bot
     environment:
-      DATABASE_URL: "postgres://postgres:postgres@postgres:5432/postgres"
+      DATABASE_URL: "postgres://postgres:postgres@db:5432/postgres"
       DATABASE_SSLMODE: "disable"
       TZ:
       REGION:
@@ -15,19 +15,20 @@ services:
       LOGGING_LEVEL:
       OUTPUT_LOG_FILE_ENABLED: "false"
     depends_on:
-      - postgres
+      - db
     logging:
       options:
         max-file: '3'
         max-size: 10m
     restart: always
-  postgres:
+  db:
     image: postgres:13
+    container_name: telegram_sticker_db
     ports:
       - "55432:5432"
     volumes:
       - ./database.sql:/docker-entrypoint-initdb.d/database.sql
-      - sticker-bot-postgres:/var/lib/postgresql/data/
+      - telegram-sticker-db:/var/lib/postgresql/data/
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
@@ -38,4 +39,4 @@ services:
     restart: always
 
 volumes:
-  sticker-bot-postgres:
+  telegram-sticker-db:
