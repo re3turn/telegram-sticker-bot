@@ -3,12 +3,12 @@
 import logging
 import asyncio
 import os
-import sys
 import telepot.aio
 from telepot.aio.loop import MessageLoop
 
 from app.env import Env
-from .sticker import Sticker
+from app.log import Log
+from app.sticker import Sticker
 
 log_name = 'bot.log'
 bot = None
@@ -89,4 +89,6 @@ def main():
 logger: logging.Logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
+    Log.init_logger(log_name='bot')
+    logger = logging.getLogger(__name__)
     main()
