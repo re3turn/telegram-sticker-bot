@@ -12,6 +12,8 @@ services:
       REGION:
       TELEPOT_API_TOKEN:
       EMOJI:
+      LOGGING_LEVEL:
+      OUTPUT_LOG_FILE_ENABLED: false
     depends_on:
       - postgres
     logging:
