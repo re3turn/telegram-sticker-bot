@@ -9,9 +9,9 @@ RUN pip3 install -r requirements.txt
 FROM python:3.8-slim as service
 ENV PYTHON_VERSION 3.8
 
-RUN apt update  \
-    && apt install -y pngquant \
-    && apt clean \
+RUN apt-get update  \
+    && apt-get install -y pngquant \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /usr/local/lib/python${PYTHON_VERSION}/site-packages /usr/local/lib/python${PYTHON_VERSION}/site-packages
 
