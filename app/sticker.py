@@ -6,14 +6,15 @@ import os
 import urllib.request
 import urllib.error
 import re
+
 import pyquery
 import zipfile
 import shutil
 import subprocess
 import traceback
-import telepot.aio
-from telepot.namedtuple import StickerSet
 from PIL import Image
+from telebot.async_telebot import AsyncTeleBot
+from telebot import types
 
 from .env import Env
 from .unicode_string import UnicodeString
@@ -23,10 +24,10 @@ MAX_STICKER_SIZE = 512
 
 
 class Sticker:
-    def __init__(self, bot, username, user_id, chat_id, sticker_id=-1):
+    def __init__(self, bot: AsyncTeleBot, username: str, user_id: int, message: types.Message, sticker_id=-1):
         self._username = username
         self._user_id = user_id
-        self._chat_id = chat_id
+        self._message = message
         self._bot = bot
         self._sticker_id = sticker_id
         self._user_dir = f'./stickers/{user_id}'
@@ -86,7 +87,7 @@ class Sticker:
         zip_url = f'http://dl.stickershop.line.naver.jp/products/0/0/1/{self._sticker_id}/iphone/stickers@2x.zip'
         try:
             urllib.request.urlretrieve(zip_url, zip_path)
-        except:
+        except BaseException:
             # Download failed
             return False
 
@@ -122,8 +123,8 @@ class Sticker:
             else:
                 prefix = f'{match.group(1)}_{self._sticker_id}'
 
-        bot_info = await self._bot.getMe()
-        bot_username = bot_info['username']
+        bot_info = await self._bot.get_me()
+        bot_username = bot_info.username
         # sticker_name is maximum 64 characters
         sticker_name = UnicodeString.normalize(prefix, 64 - len('_by_') - len(bot_username))
 
@@ -152,25 +153,24 @@ class Sticker:
 
     async def is_already_sticker_name(self, sticker_name):
         try:
-            sticker_set = await self._bot.getStickerSet(sticker_name)
-        except telepot.exception.TelegramError:
+            sticker_set = await self._bot.get_sticker_set(sticker_name)
+        except BaseException:
             return False
 
         if sticker_set is None:
             return False
 
-        if str(sticker_set.get('name')) == sticker_name:
+        if sticker_set.name == sticker_name:
             return True
 
         return False
 
     async def delete_sticker_set(self, sticker_name):
         try:
-            sticker_set = await self._bot.getStickerSet(sticker_name)
-            sticker_sets = StickerSet(**sticker_set)
-            for sticker in sticker_sets.stickers:
-                await self._bot.deleteStickerFromSet(sticker.file_id)
-        except telepot.exception.TelegramError as e:
+            sticker_set = await self._bot.get_sticker_set(sticker_name)
+            for sticker in sticker_set.stickers:
+                await self._bot.delete_sticker_from_set(sticker.file_id)
+        except Exception as e:
             logger.error("Failed delete stickers.", e.args)
             traceback.print_exc()
 
@@ -183,16 +183,16 @@ class Sticker:
         try:
             for png_path in sorted(glob.glob(f'{self._sticker_dir}/*.png')):
                 with open(png_path, 'rb') as png:
-                    uploaded_file = await self._bot.uploadStickerFile(self._user_id, png)
+                    uploaded_file = await self._bot.upload_sticker_file(self._user_id, png)
 
-                file_ids.append(uploaded_file['file_id'])
+                file_ids.append(uploaded_file.file_id)
 
             if not file_ids:
                 logger.warning(f'Not sticker file in {self._sticker_dir}.')
                 return False
 
-            is_created = await self._bot.createNewStickerSet(self._user_id, sticker_name, sticker_title,
-                                                             file_ids[0], emojis)
+            is_created = await self._bot.create_new_sticker_set(self._user_id, sticker_name, sticker_title,
+                                                                file_ids[0], emojis)
             if is_created is False:
                 return False
 
@@ -200,11 +200,11 @@ class Sticker:
                 return True
 
             for file_id in file_ids[1:]:
-                is_added = await self._bot.addStickerToSet(self._user_id, sticker_name, file_id, emojis)
+                is_added = await self._bot.add_sticker_to_set(self._user_id, sticker_name, file_id, emojis)
                 if is_added is False:
                     await self.delete_sticker_set(sticker_name)
                     return False
-        except telepot.exception.TelegramError as e:
+        except Exception as e:
             logger.error("Failed create sticker.", e.args)
             traceback.print_exc()
             if is_created is True:
@@ -217,14 +217,14 @@ class Sticker:
         if '\n' in command:
             command = command.split('\n')[1]
         elif 'sticker' not in command:
-            await self._bot.sendMessage(self._chat_id, 'Please send the sticker URL.')
+            await self._bot.reply_to(self._message, 'Please send the sticker URL.')
             return False
 
         try:
             sticker_id = re.search(r'\d+', str(command)).group()
         except Exception as e:
             logger.error('Can not find "Sticker id".', e.args)
-            await self._bot.sendMessage(self._chat_id, 'Can not find "Sticker id".')
+            await self._bot.reply_to(self._message, 'Can not find "Sticker id".')
             traceback.print_exc()
             return False
 
@@ -245,7 +245,7 @@ class Sticker:
         if entry is not None:
             sticker_name = entry[1]
             sticker_title = entry[2]
-            await self._bot.sendMessage(self._chat_id, f'{sticker_title}\nhttps://t.me/addstickers/{sticker_name}')
+            await self._bot.reply_to(self._message, f'{sticker_title}\nhttps://t.me/addstickers/{sticker_name}')
             return True
 
         os.makedirs(self._sticker_dir, exist_ok=True)
@@ -260,30 +260,20 @@ class Sticker:
         sticker_title = self.fetch_line_sticker_title(region)
         sticker_name = await self.generate_sticker_name()
 
-        is_created = await self.create_sticker_set(sticker_title, sticker_name)
-        sub = subprocess.Popen(f'rm -r {self._sticker_dir}', shell=True)
-        subprocess.Popen.wait(sub)
-        if is_created is False:
-            await self._bot.sendMessage(self._chat_id, 'Faled create sticker.')
-            return False
+        return await self._create_sticker_set(sticker_title, sticker_name)
 
-        await self._bot.sendMessage(self._chat_id, f'{sticker_title}\nhttps://t.me/addstickers/{sticker_name}')
+    @staticmethod
+    def byte_to_file(data: bytes, dest_path: str) -> None:
+        with open(dest_path, mode='wb') as fw:
+            fw.write(data)
 
-        try:
-            store.insert_sticker_info(self._username, self._user_id, sticker_title, sticker_name, sticker_id)
-        except Exception as e:
-            logger.error("Insert false.", e.args)
-            traceback.print_exc()
-
-        return True
-
-    async def register_zip_sticker(self, file_id, file_name, caption):
+    async def register_zip_sticker(self, file_id, file_name, caption) -> bool:
         basename, _ = os.path.splitext(os.path.basename(file_name))
         sticker_name = await self.generate_sticker_name(file_name=basename)
         if await self.is_already_sticker_name(sticker_name):
             msg = f'Already exist sticker_name!!\nPlease another file name.\nhttps://t.me/addstickers/{sticker_name}'
             logger.warning(msg)
-            await self._bot.sendMessage(self._chat_id, msg)
+            await self._bot.reply_to(self._message, msg)
             return False
 
         sticker_title = UnicodeString.normalize(caption, 64)
@@ -293,19 +283,24 @@ class Sticker:
             return False
         os.makedirs(self._sticker_dir, exist_ok=True)
 
-        await self._bot.download_file(file_id, f'{self._sticker_dir}/{file_name}')
+        file = await self._bot.get_file(file_id)
+        read_data = await self._bot.download_file(file.file_path)
+        self.byte_to_file(read_data, f'{self._sticker_dir}/{file_name}')
         self.unzip_sticker(file_name)
 
         self.resize_sticker()
 
+        return await self._create_sticker_set(sticker_title, sticker_name)
+
+    async def _create_sticker_set(self, sticker_title: str, sticker_name: str) -> bool:
         is_created = await self.create_sticker_set(sticker_title, sticker_name)
         sub = subprocess.Popen(f'rm -r {self._sticker_dir}', shell=True)
         subprocess.Popen.wait(sub)
         if is_created is False:
-            await self._bot.sendMessage(self._chat_id, 'Failed create sticker.')
+            await self._bot.reply_to(self._message, 'Failed create sticker.')
             return False
 
-        await self._bot.sendMessage(self._chat_id, f'{sticker_title}\nhttps://t.me/addstickers/{sticker_name}')
+        await self._bot.reply_to(self._message, f'{sticker_title}\nhttps://t.me/addstickers/{sticker_name}')
 
         store = StickerStore()
         try:

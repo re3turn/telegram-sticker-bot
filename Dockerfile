@@ -1,4 +1,4 @@
-FROM python:3.8 as builder
+FROM python:3.10 as builder
 
 WORKDIR /app
 
@@ -6,8 +6,8 @@ COPY requirements.txt /app
 RUN pip3 install -r requirements.txt
 
 
-FROM python:3.8-slim as service
-ENV PYTHON_VERSION 3.8
+FROM python:3.10-slim as service
+ENV PYTHON_VERSION 3.10
 
 RUN apt-get update  \
     && apt-get install -y pngquant \

@@ -1,27 +1,29 @@
 #!/usr/bin/python3
 
 import logging
-import asyncio
 import os
-import telepot.aio
-from telepot.aio.loop import MessageLoop
+from telebot.async_telebot import AsyncTeleBot
+from telebot import types
+import asyncio
 
 from app.env import Env
 from app.log import Log
 from app.sticker import Sticker
 
 log_name = 'bot.log'
-bot = None
+api_token = Env.get_environment('API_TOKEN', required=True)
+
+bot = AsyncTeleBot(api_token, parse_mode=None)
 
 
-def get_username(msg):
-    user_id = str(msg['from']['id'])
+def get_username(msg: types.Message):
+    user_id = msg.from_user.id
     username = None
     last_name = None
-    if 'first_name' in msg['from']:
-        username = str(msg['from']['first_name'])
-    if 'last_name' in msg['from']:
-        last_name = msg['from']['last_name']
+    if msg.from_user.first_name is not None:
+        username = msg.from_user.first_name
+    if msg.from_user.last_name is not None:
+        last_name = msg.from_user.last_name
 
     if username is None:
         if last_name is None:
@@ -34,56 +36,48 @@ def get_username(msg):
     return username
 
 
-# Define the parameters of the telegram
-async def handle(msg):
-    content_type, chat_type, chat_id = telepot.glance(msg)
-    # chat_id = str(msg['chat']['id'])
-    user_id = str(msg['from']['id'])
-    username = get_username(msg)
-    content = ''
+@bot.message_handler(func=lambda message: True, content_types=['text'])
+async def new_message(message: types.Message):
+    user_id: int = message.from_user.id
+    username: str = get_username(message)
+    command = message.text.lower()
+    content = f'{username}({user_id}):{command}'
 
-    # Receive text message response
-    if content_type == 'text':
-        command = msg['text'].lower()
-        content = f'{username}({user_id}):{command}'
+    if 'line.me' in command:
+        await bot.reply_to(message, 'Convert telegram sticker. Please wait for a few minutes...')
+        sticker = Sticker(bot, username, user_id, message)
+        await sticker.register_line_sticker(command)
+    elif command == '/start':
+        # await bot.sendMessage(chat_id, 'Please take it https://store.line.me/ja')
+        pass
 
-        if 'line.me' in command:
-            await bot.sendMessage(chat_id, 'Convert telegram sticker. Please wait for a few minutes...')
-            sticker = Sticker(bot, username, user_id, chat_id)
-            await sticker.register_line_sticker(command)
-        elif command == '/start':
-            # await bot.sendMessage(chat_id, 'Please take it https://store.line.me/ja')
-            pass
+    logger.info(content)
 
-    # Receive the file
-    elif content_type == 'document':
-        file_name = str(msg['document']['file_name'])
-        file_id = str(msg['document']['file_id'])
-        if 'caption' in msg:
-            caption = str(msg['caption'])
-        else:
-            basename, _ = os.path.splitext(os.path.basename(file_name))
-            caption = basename
-        content = f'{username}({user_id}):Send documents.\n{file_name}\n{file_id}'
-        if '.zip' in file_name:
-            sticker = Sticker(bot, username, user_id, chat_id)
-            await bot.sendMessage(chat_id, 'Convert telegram sticker. Please wait for a few minutes...')
-            await sticker.register_zip_sticker(file_id, file_name, caption)
+
+@bot.message_handler(func=lambda message: True, content_types=['document'])
+async def new_doc(message):
+    user_id: int = message.from_user.id
+    username: str = get_username(message)
+
+    file_name = message.document.file_name
+    file_id = message.document.file_id
+    if message.caption is not None and len(message.caption) > 0:
+        caption = message.caption
+    else:
+        basename, _ = os.path.splitext(os.path.basename(file_name))
+        caption = basename
+    content = f'{username}({user_id}):Send documents.\n{file_name}\n{file_id}'
+    if '.zip' in file_name:
+        sticker = Sticker(bot, username, user_id, message)
+        await bot.reply_to(message, 'Convert telegram sticker. Please wait for a few minutes...')
+        await sticker.register_zip_sticker(file_id, file_name, caption)
 
     logger.info(content)
 
 
 def main():
-    api_token = Env.get_environment('TELEPOT_API_TOKEN', required=True)
-
-    global bot
-    bot = telepot.aio.Bot(api_token)
-    loop = asyncio.get_event_loop()
-
-    loop.create_task(MessageLoop(bot, handle).run_forever())
     logger.info('Listening...')
-
-    loop.run_forever()
+    asyncio.run(bot.polling())
 
 
 logger: logging.Logger = logging.getLogger(__name__)

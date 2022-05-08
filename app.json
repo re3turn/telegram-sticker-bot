@@ -7,7 +7,7 @@
     "REGION": {
       "required": true
     },
-    "TELEPOT_API_TOKEN": {
+    "API_TOKEN": {
       "required": true
     },
     "TZ": {

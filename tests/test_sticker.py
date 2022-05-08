@@ -5,8 +5,9 @@ import shutil
 import os
 import subprocess
 import nose2.tools
-import telepot
 from PIL import Image
+from telebot.types import Message
+from telebot.async_telebot import AsyncTeleBot
 from unittest.mock import MagicMock
 from app.sticker import Sticker
 from app.store import StickerStore
@@ -14,6 +15,59 @@ from app.store import StickerStore
 TEST_CHAT_ID = 999999
 TEST_USER_ID = 999999
 TEST_USER_NAME = "test"
+TEST_MESSAGE = Message.de_json({
+    "content_type": "text",
+    "id": 774,
+    "message_id": 774,
+    "from_user": {
+        "id": 1111111,
+        "username": "test",
+        "first_name": "test",
+        "last_name": None
+    },
+    "chat": {
+        "id": 1111111,
+        "type": "private",
+        "title": None,
+        "username": "test",
+        "first_name": "test",
+        "last_name": None,
+        "photo": None,
+        "bio": None,
+        "has_private_forwards": None,
+        "description": None,
+        "invite_link": None,
+        "pinned_message": None,
+        "permissions": None,
+        "slow_mode_delay": None,
+        "message_auto_delete_time": None,
+        "has_protected_content": None,
+        "sticker_set_name": None,
+        "can_set_sticker_set": None,
+        "linked_chat_id": None,
+        "location": None
+    },
+    "date": 1652005425,
+    "text": "test",
+    "json": {
+        "message_id": 774,
+        "from": {
+            "id": 1111111,
+            "is_bot": False,
+            "first_name": "test",
+            "username": "test",
+            "language_code": "ja"
+        },
+        "chat": {
+            "id": 1111111,
+            "first_name": "test",
+            "username": "test",
+            "type": "private"
+        },
+        "date": 1652005425,
+        "text": "test"
+    }
+})
 TEST_DATABASE_URL = 'postgres://username:password@hostname:port/database'
 
 
@@ -23,7 +77,8 @@ class TestSticker:
         os.environ['DATABASE_URL'] = TEST_DATABASE_URL
 
     def setUp(self):
-        self._mock_bot = asynctest.patch('telepot.aio.Bot', autospec=True)
+        self._mock_bot = asynctest.patch('telebot.async_telebot.AsyncTeleBot',
+                                         autospec=AsyncTeleBot)
 
     def tearDown(self):
         sticker_dir = './stickers'
@@ -41,7 +96,7 @@ class TestSticker:
         assert actual == 512
 
     def test_resize_sticker(self):
-        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_CHAT_ID)
+        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE)
         for filename in glob.glob('./tests/static/png/*.*'):
             shutil.copy(filename, sticker._sticker_dir)
         sticker.resize_sticker()
@@ -53,7 +108,7 @@ class TestSticker:
             assert actual == 512
 
     def test_download_line_sticker(self):
-        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_CHAT_ID, 1646410)
+        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE, 1646410)
         sticker.download_line_sticker()
         _, _, files = next(os.walk(sticker._sticker_dir))
         actual = len(files)
@@ -66,8 +121,8 @@ class TestSticker:
         (1130155, 'ja', 'ヨグまつ'),  # selling discontinued sticker
         (9999999999999, 'en', '')
     )
-    def test_fetch_line_sticker_title(self, stikcer_id, region, ans):
-        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_CHAT_ID, stikcer_id)
+    def test_fetch_line_sticker_title(self, sticker_id, region, ans):
+        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE, sticker_id)
         actual = sticker.fetch_line_sticker_title(region=region)
         assert actual == ans
 
@@ -80,13 +135,13 @@ class TestSticker:
     )
     def test_generate_sticker_name(self, sticker_id, file_name, ans):
         self._mock_bot.getMe = asynctest.Mock(side_effect=MockTelepot.mock_get_me)
-        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_CHAT_ID, sticker_id)
+        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE, sticker_id)
         loop = asyncio.get_event_loop()
         actual = loop.run_until_complete(sticker.generate_sticker_name(file_name=file_name))
         assert actual == ans
 
     def test_unzip_sticker(self):
-        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_CHAT_ID)
+        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE)
         shutil.copy('./tests/static/zip/test.zip', sticker._sticker_dir)
         sticker.unzip_sticker('test.zip')
         _, dirs, files = next(os.walk(sticker._sticker_dir))
@@ -98,7 +153,7 @@ class TestSticker:
         ('new_sticker_set_by_testbot', False)
     )
     def test_is_already_sticker_name(self, sticker_set_name, ans):
-        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_CHAT_ID)
+        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE)
         self._mock_bot.getStickerSet = asynctest.Mock(side_effect=MockTelepot.mock_get_sticker_set)
         loop = asyncio.get_event_loop()
         actual = loop.run_until_complete(sticker.is_already_sticker_name(sticker_set_name))
@@ -111,7 +166,7 @@ class TestSticker:
         ('except_sticker', 'except_sticker_set_by_testbot', False)
     )
     def test_create_sticker_set(self, sticker_title, sticker_set_name, ans):
-        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_CHAT_ID)
+        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE)
         for filename in glob.glob('./tests/static/png/*.*'):
             shutil.copy(filename, sticker._sticker_dir)
         self._mock_bot.uploadStickerFile = asynctest.Mock(side_effect=MockTelepot.mock_upload_sticker_file)
@@ -123,14 +178,14 @@ class TestSticker:
         assert actual is ans
 
     @nose2.tools.params(
-        ('http://google.com', False),
+        ('https://google.com', False),
         ('https://store.line.me/stickershop/product/12357', True),  # Already add
         ('https://store.line.me/stickershop/product/12356', True)   # New add
     )
     def test_register_line_sticker(self, command, ans):
         self._mock_bot.sendMessage = asynctest.Mock(side_effect=MockTelepot.mock_send_message)
         self._mock_bot.getMe = asynctest.Mock(side_effect=MockTelepot.mock_get_me)
-        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_CHAT_ID)
+        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE)
         sticker.create_sticker_set = asynctest.Mock(side_effect=self.mock_create_sticker_set)
         StickerStore.insert_sticker_info = MagicMock(side_effect=self.mock_insert_sticker_info)
         StickerStore.fetch_line_sticker_info = MagicMock(side_effect=self.mock_fetch_line_sticker_info)
@@ -181,7 +236,7 @@ class MockTelepot:
         if sticker_set_name == 'exists_sticker_set_by_testbot':
             return False
         if sticker_set_name == 'except_sticker_set_by_testbot':
-            raise telepot.exception.TelegramError('', -1, None)
+            raise Exception()
         return True
 
     @staticmethod

@@ -33,3 +33,4 @@ start_bot.sh
 start_bot.bat
 .env
 .python-version
+logs/
