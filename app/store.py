@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 import logging
-import psycopg2
+import psycopg
 from datetime import datetime
 from app.env import Env
 from app.tz import Tz
@@ -15,7 +15,7 @@ class StickerStore:
 
     def _get_connection(self):
         try:
-            connection = psycopg2.connect(self._db_url, sslmode=self._ssl_mode)
+            connection = psycopg.connect(self._db_url, sslmode=self._ssl_mode)
         except Exception as e:
             logger.exception(f'Connection error. exception={e.args}')
             return None
