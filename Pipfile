@@ -16,6 +16,7 @@ Pillow = "==9.0.1"
 termcolor = "*"
 pendulum = "*"
 aiohttp = "*"
+psycopg-binary = "*"
 
 [requires]
 python_version = "3.10"
