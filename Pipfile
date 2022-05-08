@@ -10,6 +10,7 @@ asynctest = "==0.13.0"
 [packages]
 psycopg = "*"
 pyquery = "==1.4.3"
+psycopg-c = {version = "*", sys_platform = "== 'linux'"}
 pyTelegramBotAPI = "*"
 Pillow = "==9.0.1"
 termcolor = "*"
