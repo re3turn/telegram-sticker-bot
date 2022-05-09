@@ -179,32 +179,32 @@ class Sticker:
         emojis = Env.get_environment('EMOJI', default='🔗', required=False)
 
         is_created = False
-        sticker_files = []
+        file_ids = []
         try:
             for png_path in sorted(glob.glob(f'{self._sticker_dir}/*.png')):
                 with open(png_path, 'rb') as png:
                     uploaded_file = await self._bot.upload_sticker_file(self._user_id, png)
 
-                sticker_files.append(uploaded_file)
+                file_ids.append(uploaded_file.file_id)
 
-            if not sticker_files:
+            if not file_ids:
                 logger.warning(f'Not sticker file in {self._sticker_dir}.')
                 return False
 
             is_created = await self._bot.create_new_sticker_set(user_id=self._user_id, name=sticker_name,
                                                                 title=sticker_title,
                                                                 emojis=emojis,
-                                                                png_sticker=sticker_files[0])
+                                                                png_sticker=file_ids[0])
             if is_created is False:
                 return False
 
-            if len(sticker_files) == 1:
+            if len(file_ids) == 1:
                 return True
 
-            for sticker_file in sticker_files[1:]:
+            for file_id in file_ids[1:]:
                 is_added = await self._bot.add_sticker_to_set(user_id=self._user_id, name=sticker_name,
                                                               emojis=emojis,
-                                                              png_sticker=sticker_file)
+                                                              png_sticker=file_id)
                 if is_added is False:
                     await self.delete_sticker_set(sticker_name)
                     return False
