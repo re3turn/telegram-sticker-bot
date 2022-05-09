@@ -44,7 +44,7 @@ async def new_message(message: types.Message):
     content = f'{username}({user_id}):{command}'
 
     if 'line.me' in command:
-        await bot.send_message(message.id, 'Convert telegram sticker. Please wait for a few minutes...')
+        await bot.send_message(message.chat.id, 'Convert telegram sticker. Please wait for a few minutes...')
         sticker = Sticker(bot, username, user_id, message)
         await sticker.register_line_sticker(command)
     elif command == '/start':
@@ -69,7 +69,7 @@ async def new_doc(message):
     content = f'{username}({user_id}):Send documents.\n{file_name}\n{file_id}'
     if '.zip' in file_name:
         sticker = Sticker(bot, username, user_id, message)
-        await bot.send_message(message.id, 'Convert telegram sticker. Please wait for a few minutes...')
+        await bot.send_message(message.chat.id, 'Convert telegram sticker. Please wait for a few minutes...')
         await sticker.register_zip_sticker(file_id, file_name, caption)
 
     logger.info(content)
