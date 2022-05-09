@@ -179,28 +179,32 @@ class Sticker:
         emojis = Env.get_environment('EMOJI', default='🔗', required=False)
 
         is_created = False
-        file_ids = []
+        sticker_files = []
         try:
             for png_path in sorted(glob.glob(f'{self._sticker_dir}/*.png')):
                 with open(png_path, 'rb') as png:
                     uploaded_file = await self._bot.upload_sticker_file(self._user_id, png)
 
-                file_ids.append(uploaded_file.file_id)
+                sticker_files.append(uploaded_file)
 
-            if not file_ids:
+            if not sticker_files:
                 logger.warning(f'Not sticker file in {self._sticker_dir}.')
                 return False
 
-            is_created = await self._bot.create_new_sticker_set(self._user_id, sticker_name, sticker_title,
-                                                                file_ids[0], emojis)
+            is_created = await self._bot.create_new_sticker_set(user_id=self._user_id, name=sticker_name,
+                                                                title=sticker_title,
+                                                                emojis=emojis,
+                                                                png_sticker=sticker_files[0])
             if is_created is False:
                 return False
 
-            if len(file_ids) == 1:
+            if len(sticker_files) == 1:
                 return True
 
-            for file_id in file_ids[1:]:
-                is_added = await self._bot.add_sticker_to_set(self._user_id, sticker_name, file_id, emojis)
+            for sticker_file in sticker_files[1:]:
+                is_added = await self._bot.add_sticker_to_set(user_id=self._user_id, name=sticker_name,
+                                                              emojis=emojis,
+                                                              png_sticker=sticker_file)
                 if is_added is False:
                     await self.delete_sticker_set(sticker_name)
                     return False
