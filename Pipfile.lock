@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "63a66030131b9166e2f4165f235e6373e4bd6823dcbd3366a5c1da9d948da307"
+            "sha256": "fd8d946e9b769345df72bf12ea93fdb765dd44511dc74d748d68c65a839639a6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -494,11 +494,11 @@
             "version": "==1.4.3"
         },
         "pytelegrambotapi": {
+            "git": "https://github.com/eternnoir/pyTelegramBotAPI.git",
             "hashes": [
                 "sha256:0a5cdd92f1f5bb3d6a87fab7a6b7e7f27d1ea2c637cb7994b1c6dbe0429b9894"
             ],
-            "index": "pypi",
-            "version": "==4.5.1"
+            "ref": "a2f3cd03e1479fb81764c705658575fc7276fb03"
         },
         "python-dateutil": {
             "hashes": [

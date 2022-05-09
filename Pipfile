@@ -11,7 +11,7 @@ asynctest = "==0.13.0"
 psycopg = "*"
 pyquery = "==1.4.3"
 psycopg-c = {version = "*", sys_platform = "== 'linux'"}
-pyTelegramBotAPI = "*"
+pyTelegramBotAPI = {git = "https://github.com/eternnoir/pyTelegramBotAPI.git"}
 Pillow = "==9.0.1"
 termcolor = "*"
 pendulum = "*"
