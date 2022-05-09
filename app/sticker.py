@@ -264,7 +264,7 @@ class Sticker:
         sticker_title = self.fetch_line_sticker_title(region)
         sticker_name = await self.generate_sticker_name()
 
-        return await self._create_sticker_set(sticker_title, sticker_name)
+        return await self._create_sticker_set(sticker_title, sticker_name, sticker_id)
 
     @staticmethod
     def byte_to_file(data: bytes, dest_path: str) -> None:
@@ -296,7 +296,7 @@ class Sticker:
 
         return await self._create_sticker_set(sticker_title, sticker_name)
 
-    async def _create_sticker_set(self, sticker_title: str, sticker_name: str) -> bool:
+    async def _create_sticker_set(self, sticker_title: str, sticker_name: str, sticker_id=-1) -> bool:
         is_created = await self.create_sticker_set(sticker_title, sticker_name)
         sub = subprocess.Popen(f'rm -r {self._sticker_dir}', shell=True)
         subprocess.Popen.wait(sub)
@@ -308,7 +308,7 @@ class Sticker:
 
         store = StickerStore()
         try:
-            store.insert_sticker_info(self._username, self._user_id, sticker_title, sticker_name)
+            store.insert_sticker_info(self._username, self._user_id, sticker_title, sticker_name, sticker_id)
         except Exception as e:
             logger.error("Insert false.", e.args)
             traceback.print_exc()
