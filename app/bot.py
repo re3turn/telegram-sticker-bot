@@ -77,7 +77,7 @@ async def new_doc(message):
 
 def main():
     logger.info('Listening...')
-    asyncio.run(bot.polling())
+    asyncio.run(bot.polling(non_stop=True))
 
 
 logger: logging.Logger = logging.getLogger(__name__)
