@@ -12,7 +12,7 @@ psycopg = "*"
 pyquery = "==1.4.3"
 psycopg-c = {version = "*", sys_platform = "== 'linux'"}
 pyTelegramBotAPI = {git = "https://github.com/eternnoir/pyTelegramBotAPI.git"}
-Pillow = "==9.0.1"
+Pillow = "==9.3.0"
 termcolor = "*"
 pendulum = "*"
 aiohttp = "*"
