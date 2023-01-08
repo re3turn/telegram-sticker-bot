@@ -40,7 +40,7 @@ multidict==6.0.2; python_version >= '3.7'
 
 pendulum==2.1.2
 
-pillow==9.0.1
+pillow==9.3.0
 
 psycopg-binary==3.0.13
 
