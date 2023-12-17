@@ -1,0 +1,33 @@
+[project]
+name = "telegram-sticker-bot"
+version = "0.1.0"
+description = "telegram-sticker-bot"
+dependencies = [
+    "psycopg-binary>=3.1.15",
+    "psycopg>=3.1.15",
+    "psycopg-c>=3.1.15; sys_platform == 'linux'",
+    "aiohttp>=3.9.1",
+    "pyquery>=2.0.0",
+    "Pillow>=10.1.0",
+    "termcolor>=2.4.0",
+    "pendulum>=3.0.0",
+    "pyTelegramBotAPI>=4.14.0",
+]
+readme = "README.md"
+requires-python = ">= 3.11"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "nose2>=0.14.0",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]

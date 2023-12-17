@@ -1,9 +1,0 @@
-build:
-  languages:
-    - python
-  packages:
-    - pngquant
-run:
-  worker:
-    command:
-      - python run.py

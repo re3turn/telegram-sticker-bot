@@ -1,5 +1,5 @@
 init:
-	pip install -r requirements.txt
+	rye sync --no-dev --no-lock
 
 test:
 	nose2
