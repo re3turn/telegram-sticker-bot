@@ -19,3 +19,5 @@ WORKDIR /service
 
 COPY app /service/app
 COPY run.py /service
+
+ENTRYPOINT ["python", "/service/run.py"]
