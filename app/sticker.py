@@ -232,7 +232,7 @@ class Sticker:
     async def register_line_sticker(self, command):
         if '\n' in command:
             command = command.split('\n')[1]
-        elif 'sticker' not in command or 'emojishop' not in command:
+        elif 'sticker' not in command and 'emojishop' not in command:
             await self._bot.reply_to(self._message, 'Please send the sticker/emoji URL.')
             return False
 
