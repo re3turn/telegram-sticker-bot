@@ -24,25 +24,25 @@ MAX_STICKER_SIZE = 512
 
 
 class Sticker:
-    def __init__(self, bot: AsyncTeleBot, username: str, user_id: int, message: types.Message, sticker_id=-1):
+    def __init__(self, bot: AsyncTeleBot, username: str, user_id: int, message: types.Message, sticker_id="-1"):
         self._username = username
         self._user_id = user_id
         self._message = message
         self._bot = bot
-        self._sticker_id = sticker_id
+        self._sticker_id: str = sticker_id
         self._user_dir = f'./stickers/{user_id}'
         self._sticker_dir: str = self._user_dir
         self._is_emoji = False
         os.makedirs(self._user_dir, exist_ok=True)
 
-    def set_sticker_id(self, sticker_id):
+    def set_sticker_id(self, sticker_id: str):
         self._sticker_id = sticker_id
 
     def set_is_emoji(self, is_emoji):
         self._is_emoji = is_emoji
 
-    def set_sticker_dir(self, sticker_id=-1, zip_file_name=None):
-        if sticker_id == -1:
+    def set_sticker_dir(self, sticker_id="-1", zip_file_name=None):
+        if sticker_id == "-1":
             if zip_file_name is None:
                 self._sticker_dir = f'{self._user_dir}/zip'
             else:
@@ -251,7 +251,7 @@ class Sticker:
 
         self.set_sticker_id(sticker_id)
         self.set_is_emoji(is_emoji)
-        self.set_sticker_dir(sticker_id=int(sticker_id))
+        self.set_sticker_dir(sticker_id=sticker_id)
         if os.path.isdir(self._sticker_dir):
             logger.info(f'Already create sticker now. sticker_dir={self._sticker_dir}')
             return False

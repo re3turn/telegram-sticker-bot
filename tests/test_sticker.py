@@ -108,7 +108,7 @@ class TestSticker:
             assert actual == 512
 
     def test_download_line_sticker(self):
-        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE, 1646410)
+        sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE, "1646410")
         sticker.download_line_sticker()
         _, _, files = next(os.walk(sticker._sticker_dir))
         actual = len(files)
