@@ -31,11 +31,15 @@ class Sticker:
         self._bot = bot
         self._sticker_id = sticker_id
         self._user_dir = f'./stickers/{user_id}'
-        self._sticker_dir = self._user_dir
+        self._sticker_dir: str = self._user_dir
+        self._is_emoji = False
         os.makedirs(self._user_dir, exist_ok=True)
 
     def set_sticker_id(self, sticker_id):
         self._sticker_id = sticker_id
+
+    def set_is_emoji(self, is_emoji):
+        self._is_emoji = is_emoji
 
     def set_sticker_dir(self, sticker_id=-1, zip_file_name=None):
         if sticker_id == -1:
@@ -84,7 +88,11 @@ class Sticker:
         download_dir = self._sticker_dir
         zip_path = f'{download_dir}/{self._sticker_id}.zip'
 
-        zip_url = f'http://dl.stickershop.line.naver.jp/products/0/0/1/{self._sticker_id}/iphone/stickers@2x.zip'
+        if self._is_emoji:
+            zip_url = f'https://stickershop.line-scdn.net/sticonshop/v1/{self._sticker_id}/sticon/iphone/package.zip'
+        else:
+            zip_url = (f'https://stickershop.line-scdn.net/stickershop/v1/product/'
+                       f'{self._sticker_id}/iphone/stickers@2x.zip')
         try:
             urllib.request.urlretrieve(zip_url, zip_path)
         except BaseException:
@@ -95,14 +103,18 @@ class Sticker:
             zip_ref.extractall(download_dir)
 
         remove_files = (f'{download_dir}/*_key@2x.png {download_dir}/tab* '
-                        f'{download_dir}/*.meta {download_dir}/*.zip')
+                        f'{download_dir}/*.meta {download_dir}/*.zip '
+                        f'{download_dir}/meta.json {download_dir}/*.key.png')
         sub = subprocess.Popen(f'rm -f {remove_files}', shell=True)
         subprocess.Popen.wait(sub)
 
         return True
 
-    def fetch_line_sticker_title(self, region='en'):
-        url = f'https://store.line.me/stickershop/product/{self._sticker_id}/{region}'
+    def fetch_line_sticker_title(self, is_emoji: bool, region='en'):
+        if is_emoji:
+            url = f'https://store.line.me/emojishop/product/{self._sticker_id}/{region}'
+        else:
+            url = f'https://store.line.me/stickershop/product/{self._sticker_id}/{region}'
         try:
             query = pyquery.PyQuery(url=url)
             sticker_title = query('p').filter('.mdCMN38Item01Ttl').text()
@@ -114,10 +126,10 @@ class Sticker:
         # sticker_title is maximum 64 characters
         return UnicodeString.normalize(sticker_title, 64)
 
-    async def generate_sticker_name(self, file_name=None):
+    async def generate_sticker_name(self, is_emoji: bool, file_name=None):
         prefix = file_name
         if file_name is None:
-            match = re.search(r"([a-zA-Z]+[a-zA-Z\d]*)", self.fetch_line_sticker_title())
+            match = re.search(r"([a-zA-Z]+[a-zA-Z\d]*)", self.fetch_line_sticker_title(is_emoji=is_emoji))
             if match is None:
                 prefix = f'line_{self._sticker_id}'
             else:
@@ -220,12 +232,17 @@ class Sticker:
     async def register_line_sticker(self, command):
         if '\n' in command:
             command = command.split('\n')[1]
-        elif 'sticker' not in command:
-            await self._bot.reply_to(self._message, 'Please send the sticker URL.')
+        elif 'sticker' not in command or 'emojishop' not in command:
+            await self._bot.reply_to(self._message, 'Please send the sticker/emoji URL.')
             return False
 
+        is_emoji = False
         try:
-            sticker_id = re.search(r'\d+', str(command)).group()
+            if 'emojishop' not in command:
+                sticker_id = re.search(r'emojishop/product/([0-9a-z]+)', str(command)).group(1)
+                is_emoji = True
+            else:
+                sticker_id = re.search(r'\d+', str(command)).group()
         except Exception as e:
             logger.error('Can not find "Sticker id".', e.args)
             await self._bot.reply_to(self._message, 'Can not find "Sticker id".')
@@ -233,6 +250,7 @@ class Sticker:
             return False
 
         self.set_sticker_id(sticker_id)
+        self.set_is_emoji(is_emoji)
         self.set_sticker_dir(sticker_id=int(sticker_id))
         if os.path.isdir(self._sticker_dir):
             logger.info(f'Already create sticker now. sticker_dir={self._sticker_dir}')
@@ -261,8 +279,8 @@ class Sticker:
         self.resize_sticker()
 
         region = Env.get_environment('REGION', default='en', required=False)
-        sticker_title = self.fetch_line_sticker_title(region)
-        sticker_name = await self.generate_sticker_name()
+        sticker_title = self.fetch_line_sticker_title(is_emoji=is_emoji, region=region)
+        sticker_name = await self.generate_sticker_name(is_emoji=is_emoji)
 
         return await self._create_sticker_set(sticker_title, sticker_name, sticker_id)
 
@@ -296,7 +314,7 @@ class Sticker:
 
         return await self._create_sticker_set(sticker_title, sticker_name)
 
-    async def _create_sticker_set(self, sticker_title: str, sticker_name: str, sticker_id=-1) -> bool:
+    async def _create_sticker_set(self, sticker_title: str, sticker_name: str, sticker_id="-1") -> bool:
         is_created = await self.create_sticker_set(sticker_title, sticker_name)
         sub = subprocess.Popen(f'rm -r {self._sticker_dir}', shell=True)
         subprocess.Popen.wait(sub)

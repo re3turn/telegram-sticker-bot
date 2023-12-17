@@ -115,29 +115,31 @@ class TestSticker:
         assert actual == 16
 
     @nose2.tools.params(
-        (1215735, 'en', 'Winter emblem'),
-        (1215735, 'ja', '冬のワッペン'),
-        (8988, 'ko', '아리스토캣: 크레용 버전'),
-        (1130155, 'ja', 'ヨグまつ'),  # selling discontinued sticker
-        (9999999999999, 'en', '')
+        ("1215735", False, 'en', 'Winter emblem'),
+        ("1215735", False, 'ja', '冬のワッペン'),
+        ("8988", False, 'ko', '아리스토캣: 크레용 버전'),
+        ("1130155", False, 'ja', 'ヨグまつ'),  # selling discontinued sticker
+        ('62bbba25bc523362ed0bdf11', True, 'en', 'PAC-MAN Emoji'),
+        ("9999999999999", False, 'en', ''),
     )
-    def test_fetch_line_sticker_title(self, sticker_id, region, ans):
+    def test_fetch_line_sticker_title(self, sticker_id: str, is_emoji, region, ans):
         sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE, sticker_id)
-        actual = sticker.fetch_line_sticker_title(region=region)
+        actual = sticker.fetch_line_sticker_title(is_emoji=is_emoji, region=region)
         assert actual == ans
 
     @nose2.tools.params(
-        (-1, "abcdef", 'abcdef_by_testbot'),
-        (9365573, None, 'Hitori_9365573_by_testbot'),
-        (1215735, None, 'Winter_1215735_by_testbot'),
-        (14056952, None, 'DK_14056952_by_testbot'),
-        (9999999999999, None, 'line_9999999999999_by_testbot')
+        ("-1", False, "abcdef", 'abcdef_by_testbot'),
+        ("9365573", False, None, 'Hitori_9365573_by_testbot'),
+        ("1215735", False, None, 'Winter_1215735_by_testbot'),
+        ("14056952", False, None, 'DK_14056952_by_testbot'),
+        ("62bbba25bc523362ed0bdf11", True, None, 'PAC-MAN_62bbba_by_testbot'),
+        ("9999999999999", False, None, 'line_9999999999999_by_testbot'),
     )
-    def test_generate_sticker_name(self, sticker_id, file_name, ans):
+    def test_generate_sticker_name(self, sticker_id: str, is_emoji, file_name, ans):
         self._mock_bot.getMe = asynctest.Mock(side_effect=MockTelepot.mock_get_me)
         sticker = Sticker(self._mock_bot, TEST_USER_NAME, TEST_USER_ID, TEST_MESSAGE, sticker_id)
         loop = asyncio.get_event_loop()
-        actual = loop.run_until_complete(sticker.generate_sticker_name(file_name=file_name))
+        actual = loop.run_until_complete(sticker.generate_sticker_name(is_emoji=is_emoji, file_name=file_name))
         assert actual == ans
 
     def test_unzip_sticker(self):
