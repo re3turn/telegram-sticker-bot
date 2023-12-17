@@ -238,7 +238,7 @@ class Sticker:
 
         is_emoji = False
         try:
-            if 'emojishop' not in command:
+            if 'emojishop' in command:
                 sticker_id = re.search(r'emojishop/product/([0-9a-z]+)', str(command)).group(1)
                 is_emoji = True
             else:
