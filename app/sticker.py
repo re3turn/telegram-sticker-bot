@@ -104,7 +104,7 @@ class Sticker:
 
         remove_files = (f'{download_dir}/*_key@2x.png {download_dir}/tab* '
                         f'{download_dir}/*.meta {download_dir}/*.zip '
-                        f'{download_dir}/meta.json {download_dir}/*.key.png')
+                        f'{download_dir}/meta.json {download_dir}/*_key*.png')
         sub = subprocess.Popen(f'rm -f {remove_files}', shell=True)
         subprocess.Popen.wait(sub)
 
