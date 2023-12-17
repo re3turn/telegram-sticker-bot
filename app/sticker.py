@@ -188,7 +188,7 @@ class Sticker:
 
     async def create_sticker_set(self, sticker_title, sticker_name):
         logger.info(f'Create sticker. title={sticker_title}, sticker_name={sticker_name}')
-        emojis = Env.get_environment('EMOJI', default='🔗', required=False)
+        emojis = [Env.get_environment('EMOJI', default='🔗', required=False)]
 
         is_created = False
         file_ids = []
