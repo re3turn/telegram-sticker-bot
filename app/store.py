@@ -23,7 +23,7 @@ class StickerStore:
         connection.autocommit = True
         return connection
 
-    def fetch_line_sticker_info(self, line_sticker_id):
+    def fetch_line_sticker_info(self, line_sticker_id: str):
         with self._get_connection() as connection:
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -35,7 +35,7 @@ class StickerStore:
 
         return sticker_info
 
-    def insert_sticker_info(self, username, user_id, sticker_title, sticker_name, sticker_id=-1):
+    def insert_sticker_info(self, username, user_id, sticker_title, sticker_name, sticker_id="-1"):
         date = datetime.now(self._tz).strftime("%Y/%m/%d %H:%M:%S")
         with self._get_connection() as connection:
             with connection.cursor() as cursor:

@@ -5,7 +5,7 @@ create table sticker_info
     sticker_name    text    not null
         constraint short_name
             unique,
-    line_sticker_id integer default '-1'::integer,
+    line_sticker_id char(100) default '-1'::bpchar,
     user_id         integer not null,
     date            text
 );
