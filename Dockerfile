@@ -2,7 +2,7 @@ FROM python:3.12 as builder
 
 WORKDIR /app
 
-COPY requirements.lock /app
+COPY requirements.lock pyproject.toml README.md /app
 RUN pip3 install -r requirements.lock
 
 
