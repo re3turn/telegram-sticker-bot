@@ -73,7 +73,7 @@ class Sticker:
             png = f'{os.path.splitext(png)[0]}.png'
             original_w, original_h = img.size
             new_w, new_h = self.new_size(original_w, original_h)
-            img = img.convert('RGBA').resize((new_w, new_h), Image.ANTIALIAS)
+            img = img.convert('RGBA').resize((new_w, new_h), Image.LANCZOS)
             img.save(png, 'png')
 
         png_list = glob.glob(f'{self._sticker_dir}/*.png')
